@@ -34,6 +34,7 @@ checkstraight list | 1 `elem` list && 6 `elem` list  = False
 --de functie werkt door eerst te kijken hoe vaak het grootste getal voorkomt in de lijst. Dit wordt gedaan door checkThrowForBiggestDuplicate te gebruiken
 --Vervolgens wordt er gekeken hoe vaak er dubbele getallen voorkomen in de lijst. Dit wordt gedaan door de dubbelen functie te gebruiken
 --Vervolgens wordt er gekeken welke hand het is en wordt er een string terug gegeven
+
 checkThrow :: [Int] -> [Char]
 checkThrow throw | biggestDupe == 1 =  if checkstraight throw then "Straight" else "bust"
                  | biggestDupe == 2  = if double == 2 then "Two pair" else "One pair"
