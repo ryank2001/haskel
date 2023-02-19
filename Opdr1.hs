@@ -57,6 +57,13 @@ binaryNumberCheck shiftGetal huidigeWaarde | shiftGetal == 0 = huidigeWaarde
 fastmult :: Integer->Integer->Integer
 fastmult getal1 getal2 = sum[shiftL getal1 (fromInteger (x-1)) | x <- [1..binaryNumberCheck getal2 1], shiftR getal2 (fromInteger (x-1)) .&. 1== 1]
 
+fasterMult :: Integer->Integer->Integer
+fasterMult 2 2 = 4
+fasterMult getal1 2      | even getal1 = fasterMult (shiftR getal1 1) 2 
+                         | otherwise = 2 + fasterMult (getal1-1) 2 
+fasterMult getal1 getal2 | even getal2 = fasterMult getal1 (shiftR getal2 1) + fasterMult getal1 (shiftR getal2 1)
+                         | otherwise = getal1 + fasterMult getal1 (getal2-1)
+
 
 --werkt door het getal1 keer dezelfde functie te doen met de macht 1 lager tot de macht op 1 staat
 pow :: Integer->Integer->Integer
@@ -73,7 +80,7 @@ fastpow :: Integer->Integer->Integer
 fastpow 0 macht = 0
 fastpow getal1 0 = 1
 fastpow getal1 1 = getal1
-fastpow getal1 macht | even macht = fastmult (fastpow getal1 (shiftR macht 1)) (fastpow getal1 (shiftR macht 1))
-                     | odd macht = fastmult getal1 (fastpow getal1 (macht-1))
+fastpow getal1 macht | even macht = fasterMult (fastpow getal1 (shiftR macht 1)) (fastpow getal1 (shiftR macht 1))
+                     | odd macht = fasterMult getal1 (fastpow getal1 (macht-1))
 
 
