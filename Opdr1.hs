@@ -18,8 +18,10 @@ fac1 n = product [1..n]
 
 --faculteit berekenen met guards
 fac2 :: Int -> Int
-fac2 n | n == 0 = 1
+fac2 n 
+    | n == 0 = 1
     | n /= 0 = product [1..n]
+
 
 
 --ABC formule met een where statment
@@ -48,8 +50,9 @@ mult getal1 getal2 = sum [getal1 | x <- [1..getal2]]
 
 
 binaryNumberCheck :: Integer -> Integer -> Integer
-binaryNumberCheck shiftGetal huidigeWaarde | shiftGetal == 0 = huidigeWaarde
-                                           | otherwise = binaryNumberCheck (shiftR shiftGetal 1) (huidigeWaarde + 1)
+binaryNumberCheck shiftGetal huidigeWaarde 
+                    | shiftGetal == 0 = huidigeWaarde
+                    | otherwise = binaryNumberCheck (shiftR shiftGetal 1) (huidigeWaarde + 1)
 
 --werkt door het binaire getal 2 te checken op welke posities allemaal 1 staan.
 --als dit het geval is wordt getal1 gebitshifted naar links voor de hoeveelheid binaire getallen er achter de 1 stonden en wordt deze in eeen list gezet en opgeteld

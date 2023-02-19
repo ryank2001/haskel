@@ -34,4 +34,4 @@ dubbelen :: [Char] -> [Char]
 dubbelen [] = []
 dubbelen list = [x | x <- nub list,length (checkCharacter list x) >1 ]
 
-
+--\\  //
