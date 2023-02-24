@@ -1,1 +1,1 @@
-Node 'a' Empty (Node 'b' Empty (Node 'c' Empty (Node 'z' Empty Empty)))
+Node ('0',34) (Node ('0',11) (Node ('a',8) Empty Empty) (Node ('d',3) Empty Empty)) (Node ('0',23) (Node ('e',1) Empty Empty) (Node ('0',22) (Node ('c',12) Empty Empty) (Node ('b',10) Empty Empty)))
