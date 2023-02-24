@@ -1,0 +1,1 @@
+Node 'a' Empty (Node 'b' Empty (Node 'c' Empty (Node 'z' Empty Empty)))

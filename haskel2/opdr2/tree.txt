@@ -1,0 +1,1 @@
+Node 82 (Node 32 Empty (Node 75 (Node 32 Empty (Node 50 (Node 49 Empty Empty) Empty)) Empty)) (Node 121 (Node 97 Empty (Node 110 (Node 101 Empty (Node 101 Empty (Node 109 (Node 105 Empty (Node 107 Empty Empty)) Empty))) (Node 110 Empty Empty))) Empty)
