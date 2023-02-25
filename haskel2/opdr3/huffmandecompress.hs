@@ -78,7 +78,7 @@ main = do
     treestring <- readFile treeFile
     let tree  = read treestring :: Bintree (Char,Int)
     let string = bytesToStr inputstring ""
-    putStrLn string
+
     let output = huffmanDecompress tree string
     writeFile outputFile output
     putStrLn "decompressing done"

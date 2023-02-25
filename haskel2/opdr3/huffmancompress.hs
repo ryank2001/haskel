@@ -28,6 +28,7 @@ import Data.ByteString as BS
 
 
 
+
 {-
 Function 'checkCharacter' checks how many times a character occurs in a String.
 Takes 2 arguments:
@@ -63,14 +64,21 @@ after this it will check both the first and second leaf of both 'queue1' and 'qu
 -}
 leafToTree :: [Bintree (Char,Int)] -> [Bintree (Char,Int)]-> Bintree (Char,Int)
 leafToTree [] [] = Empty
-leafToTree [] ((Node (c,w) t1 t2):[]) = Node (c,w) t1 t2
-leafToTree ((Node (c,w) t1 t2):[]) [] = Node (c,w) t1 t2
+leafToTree [] [(Node (c,w) t1 t2)] = Node (c,w) t1 t2
+leafToTree [(Node (c,w) t1 t2)] [] = Node (c,w) t1 t2
 leafToTree [] ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) = leafToTree [] (rest ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
-leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) []= leafToTree [] (rest ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
+leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) []= leafToTree rest [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)]
 leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) ((Node (c3,w3) t5 t6):(Node (c4,w4) t7 t8):rest2)
-    | w1 <= w4 = leafToTree rest ((Node (c3,w3) t5 t6:Node (c4,w4) t7 t8:rest2) ++ [Node ('0', w3+w4) (Node (c3,w3) t5 t6) (Node (c4,w4) t7 t8)])
-    | w3 <= w2 = leafToTree (Node (c1,w1) t1 t2:Node (c2,w2) t3 t4:rest) (rest2 ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
+    | w3 >= w2 = leafToTree rest (Node (c3,w3) t5 t6:(Node (c4,w4) t7 t8:rest2) ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
+    | w1 >= w4 = leafToTree (Node (c1,w1) t1 t2:Node (c2,w2) t3 t4:rest) (rest2 ++ [Node ('0', w3+w4) (Node (c3,w3) t5 t6) (Node (c4,w4) t7 t8)])
     | otherwise = leafToTree (Node (c2,w2) t3 t4:rest) (Node (c4,w4) t7 t8:rest2 ++ [Node ('0', w1+w3) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
+leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) ((Node (c3,w3) t5 t6):rest2)
+    | w3 >= w2 = leafToTree rest ((Node (c3,w3) t5 t6:rest2) ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
+    | otherwise = leafToTree (Node (c2,w2) t3 t4:rest) (rest2 ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
+leafToTree ((Node (c1,w1) t1 t2):rest) ((Node (c3,w3) t5 t6):(Node (c4,w4) t7 t8):rest2)
+    | w1 >= w4 = leafToTree (Node (c1,w1) t1 t2:rest) (rest2 ++ [Node ('0', w3+w4) (Node (c3,w3) t5 t6) (Node (c4,w4) t7 t8)])
+    | otherwise = leafToTree rest (Node (c4,w4) t7 t8:rest2 ++ [Node ('0', w1+w3) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
+leafToTree [(Node (c1,w1) t1 t2)] [(Node (c2,w2) t3 t4)] = leafToTree [] [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)]
 
 
 {-
@@ -95,6 +103,10 @@ the return value is a binary tree with the most used characters at the top and t
 createBinaryTree :: String -> Bintree (Char,Int)
 createBinaryTree [] = Empty
 createBinaryTree input = mapsToLeaf  (sortBy ((\(_,a) (_,b) -> compare a b)) $ doubles input) 
+
+temp :: String -> [(Char,Int)]
+temp [] =   []
+temp input = (sortBy ((\(_,a) (_,b) -> compare a b)) $ doubles input) 
 
 
 
@@ -191,13 +203,14 @@ main = do
     let useError = "Usage: rlcompress <inputfile.txt> <outputfile.txt> <outputtreefile.txt>"
     [inputFile, outputFile, treeFile] <- validateInput args expectedArgAmount expectedArgExtensions useError
     input <- Prelude.readFile inputFile
-
+    putStrLn (show (temp input))
     let tree = createBinaryTree input
+    Prelude.writeFile treeFile $ show tree
     let output = huffEncrypt tree input
     let result = strToByteS output empty
 
     BS.writeFile outputFile result
-    Prelude.writeFile treeFile $ show tree
+    
     printStats input result
     
     
