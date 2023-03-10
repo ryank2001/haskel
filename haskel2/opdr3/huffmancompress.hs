@@ -15,7 +15,7 @@
 module Main where
 import BinaryTree
 import InputValidate
-import Data.List (sortBy, sortOn, nub)
+import Data.List as LT
 import System.Directory.Internal.Prelude (getArgs)
 import Data.ByteString (ByteString, empty)
 import GHC.Exts.Heap (GenClosure(value))
@@ -23,6 +23,7 @@ import Data.Bits (Bits(shift))
 import qualified Data.Map as Map
 import Data.Word
 import Data.ByteString as BS
+import Data.Maybe (isNothing)
 
 
 
@@ -49,6 +50,49 @@ doubles :: [Char] -> [(Char,Int)]
 doubles [] = []
 doubles list = [(x,checkCharacter list x) | x <- nub list]
 
+{-
+extracts the weight of a character from a tree node
+takes 1 argument:
+    'tree': the tree node that is being checked
+returns the weight of the tree node
+
+-}
+weightNode :: Bintree (Char,Int) -> Int
+weightNode (Node (c,w) t1 t2) = w
+weightNode Empty = 0
+{-
+extracts the character from a tree node
+takes 1 argument:
+    'tree': the tree node that is being checked
+returns the character in the tree node
+-}
+charNode :: Bintree (Char,Int) -> Char
+charNode (Node (c,w) t1 t2) = c
+charNode Empty = ' '
+
+{-
+function 'combineTree' combines 2 bintrees by attatching them to a node and putting char '0' and the weight of the 2 trees combined as the character and weight of the node.
+takes 2 arguments:
+    'tree1': the first tree that is being combined
+    'tree2': the second tree that is being combined
+returns a tree with the 2 trees combined
+-}
+combineTree :: Bintree (Char,Int) -> Bintree (Char,Int) -> Bintree (Char,Int)
+combineTree tree1 tree2 = Node ('0', weightNode tree1 + weightNode tree2) tree1 tree2
+
+{-
+function 'compareWeightNodes' compares the weight of 2 bintrees.
+takes 2 arguments:
+    'tree1': the first tree that is being compared
+    'tree2': the second tree that is being compared
+returns a boolean that is true if the weight of tree1 is higher than the weight of tree2
+if any of the trees are empty it will return false
+-}
+compareWeightNodes :: Bintree (Char,Int) -> Bintree (Char,Int) -> Bool
+compareWeightNodes Empty Empty = False
+compareWeightNodes Empty _ = False
+compareWeightNodes _ Empty = False
+compareWeightNodes tree1 tree2 = weightNode tree1 >= weightNode tree2
 
 {-
 Function 'leafToTree' converts a list of tuples to a binary tree that holds the characters in the file to be encrypted.
@@ -64,21 +108,19 @@ after this it will check both the first and second leaf of both 'queue1' and 'qu
 -}
 leafToTree :: [Bintree (Char,Int)] -> [Bintree (Char,Int)]-> Bintree (Char,Int)
 leafToTree [] [] = Empty
-leafToTree [] [(Node (c,w) t1 t2)] = Node (c,w) t1 t2
-leafToTree [(Node (c,w) t1 t2)] [] = Node (c,w) t1 t2
-leafToTree [] ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) = leafToTree [] (rest ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
-leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) []= leafToTree rest [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)]
-leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) ((Node (c3,w3) t5 t6):(Node (c4,w4) t7 t8):rest2)
-    | w3 >= w2 = leafToTree rest (Node (c3,w3) t5 t6:(Node (c4,w4) t7 t8:rest2) ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
-    | w1 >= w4 = leafToTree (Node (c1,w1) t1 t2:Node (c2,w2) t3 t4:rest) (rest2 ++ [Node ('0', w3+w4) (Node (c3,w3) t5 t6) (Node (c4,w4) t7 t8)])
-    | otherwise = leafToTree (Node (c2,w2) t3 t4:rest) (Node (c4,w4) t7 t8:rest2 ++ [Node ('0', w1+w3) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
-leafToTree ((Node (c1,w1) t1 t2):(Node (c2,w2) t3 t4):rest) ((Node (c3,w3) t5 t6):rest2)
-    | w3 >= w2 = leafToTree rest ((Node (c3,w3) t5 t6:rest2) ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)])
-    | otherwise = leafToTree (Node (c2,w2) t3 t4:rest) (rest2 ++ [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
-leafToTree ((Node (c1,w1) t1 t2):rest) ((Node (c3,w3) t5 t6):(Node (c4,w4) t7 t8):rest2)
-    | w1 >= w4 = leafToTree (Node (c1,w1) t1 t2:rest) (rest2 ++ [Node ('0', w3+w4) (Node (c3,w3) t5 t6) (Node (c4,w4) t7 t8)])
-    | otherwise = leafToTree rest (Node (c4,w4) t7 t8:rest2 ++ [Node ('0', w1+w3) (Node (c1,w1) t1 t2) (Node (c3,w3) t5 t6)])
-leafToTree [(Node (c1,w1) t1 t2)] [(Node (c2,w2) t3 t4)] = leafToTree [] [Node ('0', w1+w2) (Node (c1,w1) t1 t2) (Node (c2,w2) t3 t4)]
+leafToTree [] [tree1] = tree1
+leafToTree [tree1] [] = tree1
+leafToTree [] (tree1:tree2:rest) = leafToTree [] (rest ++ [combineTree tree1 tree2])
+leafToTree (tree1:tree2:rest) []= leafToTree rest [combineTree tree1 tree2]
+leafToTree (tree1:rest) (tree3:rest2)
+    | compareWeightNodes tree3 tree2 = leafToTree (LT.tail rest) (tree3:rest2 ++ [combineTree tree1 tree2])
+    | compareWeightNodes tree1 tree4 = leafToTree (tree1:rest) (LT.tail rest2 ++ [combineTree tree3 tree4])
+    | otherwise = leafToTree rest (rest2 ++ [combineTree tree1 tree3])
+        where tree2 = if LT.null rest then Empty else Prelude.head rest
+              tree4 = if LT.null rest2 then Empty else Prelude.head rest2
+            
+
+
 
 
 {-
@@ -190,7 +232,7 @@ Might have some trailing zeros that i do not know how to remove.
 -}
 strToByteS :: String -> ByteString -> ByteString
 strToByteS [] value = value
-strToByteS input output = strToByteS rest (singleton byte `append` output)
+strToByteS input output = strToByteS rest (BS.singleton byte `append` output)
     where (rest, byte) = strToBits input 8 0
           
 
